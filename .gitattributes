@@ -1,4 +1,4 @@
-*.go golang
-*.js golang
-*.html golang
-*.css golang
+*.go linguist-language=golang
+*.js linguist-language=golang
+*.html linguist-language=golang
+*.css linguist-language=golang
