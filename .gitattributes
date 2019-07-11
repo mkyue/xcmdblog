@@ -1,0 +1,4 @@
+*.go golang
+*.js golang
+*.html golang
+*.css golang
