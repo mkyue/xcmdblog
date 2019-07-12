@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	"xcmdblog/services/mdnotify"
 )
 
@@ -29,6 +30,9 @@ type Article struct {
 	ImageShow string
 	//文档内容
 	Content string
+
+	//unix
+	Timestamp int64
 }
 
 type MdParser struct {
@@ -119,6 +123,7 @@ func (a *MdParser) InitArticles() error {
 
 	for _,name := range files{
 		article, e := a.ParseMarkdown(a.Filepath + "/" + name)
+
 		if e != nil {
 			return e
 		}
@@ -127,7 +132,8 @@ func (a *MdParser) InitArticles() error {
 			continue
 		}
 		article.FileName = name
-		Articles = append(Articles, article)
+		a.addArticleToSource(article)
+		//Articles = append(Articles, article)
 	}
 
 	//监听文件夹
@@ -139,6 +145,37 @@ func (a *MdParser) InitArticles() error {
 	go notify.Watch(a)
 
 	return nil
+}
+
+func (a *MdParser) addArticleToSource(article *Article) {
+	timeSource, e := time.Parse("2006/01/02", article.PostDate)
+	if e != nil {
+		Articles = append(Articles, article)
+		return
+	}else{
+		article.Timestamp = timeSource.Unix()
+		if len(Articles) ==0 {
+			Articles = append(Articles, article)
+			return
+		}
+
+		if article.Timestamp >Articles[0].Timestamp {
+			Articles = append([]*Article{article}, Articles ...)
+			return
+		}
+
+		if article.Timestamp <= Articles[len(Articles) - 1].Timestamp {
+			Articles = append(Articles, article)
+			return
+		}
+		for i, v := range Articles{
+			if v.Timestamp < article.Timestamp {
+				Articles = append(append(Articles[0:i], article), Articles[i:]...)
+			}
+		}
+
+		return
+	}
 }
 
 func (a *MdParser) removeArticle(filename string) {
@@ -163,35 +200,39 @@ func (a *MdParser) appendArticle(filename string) error {
 
 	article.FileName = filename
 
-	for i,a := range Articles {
-		if a.FileName == article.FileName {
-			Articles[i] = article
-			return nil
+	for i:=0;i<len(Articles) ;i++  {
+		if Articles[i].FileName == article.FileName {
+			log.Println("append")
+			Articles = append(Articles[0:i], Articles[i+1:] ...)
+			break
 		}
 	}
-	Articles = append(Articles, article)
+	log.Println("append:over", Articles)
+	a.addArticleToSource(article)
+	//Articles = append(Articles, article)
 
 	return nil
 }
 
 func (a *MdParser) Create(name string) {
+	log.Println("create:"+ name)
 	e := a.appendArticle(filepath.Base(name))
 	log.Println(e)
 }
 
 func (a *MdParser) Write(name string) {
-
+	log.Println("Write:" + name)
 	e := a.appendArticle(filepath.Base(name))
 	log.Println(e)
 }
 
 func (a *MdParser) Remove(name string) {
-
+	log.Println("Remove:"+ name)
 	a.removeArticle(filepath.Base(name))
 }
 
 func (a *MdParser) Rename(name string) {
-
+	log.Println("Rename:"+ name)
 	a.removeArticle(filepath.Base(name))
 }
 

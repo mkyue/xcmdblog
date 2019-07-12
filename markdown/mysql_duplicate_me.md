@@ -1,9 +1,10 @@
 <Title INSERT... ON DUPLICATE KEY UPDATE引起的问题>
 <SubTitle 首先，任何情况下慎用INSERT...ON DUPLICATE KEY UPDATE, 多个唯一性索引配合DUPLICATE KEY UPDATE引起更新不安预期进行>
 <Author xcy>
-<PostDate 2019/07/07>
+<PostDate 2019/08/29>
 <UpdateDate 2019/07/07>
 <ImageShow https://www.baidu.com/img/bd_logo1.png?where=super>
+
 
 **首先，任何情况下慎用INSERT ... ON DUPLICATE KEY UPDATE**
 

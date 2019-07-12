@@ -40,9 +40,16 @@ func (m *Mdnotify) Watch(wf WatchFunc) {
 		for {
 			select {
 			case events, ok := <-watcher.Events:
+
 				if !ok {
+
 					return
 				}
+
+				if filepath.Ext(events.Name) != ".md" {
+					continue
+				}
+
 
 				switch events.Op.String() {
 				case "CREATE":

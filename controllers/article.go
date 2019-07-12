@@ -12,23 +12,39 @@ type ArticleController struct {
 }
 
 func (c *ArticleController) List() {
+	listCopy := []*mdparser.Article{}
 	list := mdparser.Articles
+	keyword := c.GetString("keyword", "")
+
+	//不为空先过滤一遍
+	if len(keyword) != 0 {
+		for i:=0; i< len(list); i++ {
+			if strings.Index(strings.ToLower(list[i].Title), strings.ToLower(keyword)) != -1 {
+				listCopy = append(listCopy, list[i])
+			}
+		}
+	}else{
+		listCopy = mdparser.Articles
+	}
 	page, e := c.GetInt("page", 1)
 	if e != nil || page < 1 {
 		page = 1
 	}
+
+
+
 	start := (page - 1) * 3
 
-	if start > len(list) {
+	if start > len(listCopy) {
 		start = 0
 	}
 	end := start + 3
-	if len(list) < end {
-		end = len(list)
+	if len(listCopy) < end {
+		end = len(listCopy)
 	}
 	var ret []interface{}
 
-	for _, article := range list[start:end]{
+	for _, article := range listCopy[start:end]{
 		ret = append(ret, map[string]string{
 			"title" : article.Title,
 			"sub_title" : article.SubTitle,
@@ -41,7 +57,7 @@ func (c *ArticleController) List() {
 		})
 	}
 	c.Data["list"] = ret
-	if end < len(list) {
+	if end < len(listCopy) {
 		c.Data["nextpage"] = page + 1
 	}else{
 		c.Data["nextpage"] = 0
